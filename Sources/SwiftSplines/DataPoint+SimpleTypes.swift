@@ -34,5 +34,15 @@ extension FloatingPoint {
     }
 }
 
-extension Float: DataPoint { }
-extension Double: DataPoint { }
+extension Float: DataPoint {
+    public func norm() -> Float {
+        print("not supported norm for scalars")
+        return 0
+    }
+}
+extension Double: DataPoint {
+    public func norm() -> Double {
+        print("not supported norm for scalars")
+        return 0
+    }
+}

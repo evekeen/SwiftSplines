@@ -52,6 +52,10 @@ extension CGPoint: DataPoint {
             y: left.y + right.y
         )
     }
+    
+    public func norm() -> CGPoint {
+        return CGPoint(x: -y, y: x)
+    }
 }
 
 extension CGVector: DataPoint {
@@ -79,5 +83,9 @@ extension CGVector: DataPoint {
             dx: left.dx + right.dx,
             dy: left.dy + right.dy
         )
+    }
+    
+    public func norm() -> CGVector {
+        return CGVector(dx: -dy, dy: dx)
     }
 }

@@ -84,6 +84,7 @@ public struct Spline<P: DataPoint> {
         }
         self.coefficients = coefficients
         self.boundary = boundaryCondition
+        self.norms = values.map { p in return p.norm() }
     }
     
     /// Calculates the interpolation at a given argument
@@ -159,6 +160,7 @@ public struct Spline<P: DataPoint> {
     private let boundary: BoundaryCondition
     private let controlPoints: [P.Scalar]
     private let coefficients: [CubicPoly]
+    private let norms: [P]
 
     private var length: P.Scalar {
         guard let first = controlPoints.first, let last = controlPoints.last else {

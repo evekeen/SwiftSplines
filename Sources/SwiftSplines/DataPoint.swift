@@ -47,6 +47,8 @@ public protocol DataPoint {
     
     static func * (left: Scalar, right: Self) -> Self
     static func + (left: Self, right: Self) -> Self
+    
+    func norm() -> Self
 }
 
 extension DataPoint {
