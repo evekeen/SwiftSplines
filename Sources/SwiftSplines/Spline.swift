@@ -198,7 +198,7 @@ public struct Spline<P: DataPoint> {
     private let controlPoints: [P.Scalar]
     private let coefficients: [CubicPoly]
     
-    let norms: [P]
+    public let norms: [P]
 
     private var length: P.Scalar {
         guard let first = controlPoints.first, let last = controlPoints.last else {
