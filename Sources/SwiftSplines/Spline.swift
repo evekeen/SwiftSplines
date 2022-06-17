@@ -84,7 +84,7 @@ public struct Spline<P: DataPoint> {
         }
         self.coefficients = coefficients
         self.boundary = boundaryCondition
-        self.norms = values.map { p in return p.norm() }
+        self.norms = derivatives.map { p in return p.norm() }
     }
     
     /// Calculates the interpolation at a given argument
@@ -159,60 +159,30 @@ public struct Spline<P: DataPoint> {
     
     public func norm(t: P.Scalar) -> P {
         guard t >= controlPoints[0] else {
-            switch boundary {
-            case .circular:
-                let negative = controlPoints[0] - t
-                if negative <= 1 {
-                    return coefficients[controlPoints.count-1].norm(t: 1 - negative)
-                } else {
-                    let factor = ceil(negative/length)
-                    let tNew = t + factor * length
-                    return norm(t: tNew)
-                }
-            case .fixedTangentials(let dAtStart, _):
-                // extend linear function to the left
-                let negative = controlPoints[0] - t
-                return coefficients[0].a + (negative * dAtStart)
-            case .smooth:
-                let len0 = (controlPoints[1] - controlPoints[0])
-                let lambda = (t - controlPoints[0]) / len0
-                return coefficients[0].norm(t: lambda)
-            }
+            let len0 = (controlPoints[1] - controlPoints[0])
+            let lambda = (t - controlPoints[0]) / len0
+            return coefficients[0].norm(t: lambda)
         }
 
-        guard let last = controlPoints.last else { return coefficients[0].a }
+        guard let last = controlPoints.last else { return coefficients[0].a.norm() }
         guard t != last else {
-            switch boundary {
-            case .circular:
-                return coefficients.last!.f(t: 0)
-            default:
-                return coefficients.last!.f(t: 1)
-            }
+            return coefficients.last!.norm(t: 1)
         }
         guard t < last else {
             // extend constant function to the right
             // extend constant function to the left
-            switch boundary {
-            case .circular:
-                let positive = t - last
-                if positive <= 1 {
-                    return coefficients[controlPoints.count-1].norm(t: positive)
-                } else {
-                    let factor = ceil(positive/length)
-                    let tNew = t - factor * length
-                    return norm(t: tNew)
-                }
-            case .fixedTangentials(_, let dAtEnd):
-                let value = coefficients[coefficients.count - 1].norm(t: 1)
-                let positive = t - last
-                return value + positive * dAtEnd
-            case .smooth:
-                let end = controlPoints.count - 1
-                let len0 = (controlPoints[end] - controlPoints[end-1])
-                let lambda = (t - controlPoints[end-1]) / len0
-                return coefficients[controlPoints.count-2].norm(t: lambda)
-            }
+            let end = controlPoints.count - 1
+            let len0 = (controlPoints[end] - controlPoints[end-1])
+            let lambda = (t - controlPoints[end-1]) / len0
+            return coefficients[controlPoints.count-2].norm(t: lambda)
         }
+        
+//        if let exactIndex = controlPoints.enumerated().first(where: { (offset, element) -> Bool in
+//            return element == t && offset + 1 < controlPoints.count && t < controlPoints[offset+1]
+//        })?.offset {
+//            print("returning exact norm...")
+//            return norms[exactIndex]
+//        }
         
         // find t_n where t_n <= t < t_n+1
         let index = controlPoints.enumerated().first(where: { (offset, element) -> Bool in
@@ -227,7 +197,8 @@ public struct Spline<P: DataPoint> {
     private let boundary: BoundaryCondition
     private let controlPoints: [P.Scalar]
     private let coefficients: [CubicPoly]
-    private let norms: [P]
+    
+    let norms: [P]
 
     private var length: P.Scalar {
         guard let first = controlPoints.first, let last = controlPoints.last else {
